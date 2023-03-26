@@ -36,6 +36,8 @@ def supports_color() -> bool:
     is_wnd_term = detect_windows_terminal()
     # isatty is not always implemented, #6223.
     is_a_tty = hasattr(sys.stdout, 'isatty') and sys.stdout.isatty()
+    if supported_platform:
+        return True
     if (not supported_platform and is_wnd_term and is_a_tty):
         return True
     if not supported_platform or not is_a_tty:
@@ -77,7 +79,7 @@ def print_rainbow_text(text, freq: int = 220, end: str = "\n"):
     if not supports_color():
         # print to stderr so doesn't mess with IO redirections.
         sys.stderr.write(
-            "No support for colour on this terminal. Try bash/cygwin." + os.linesep)
+            "No support for colour on this terminal. Try bash/zsh/cygwin/Windows Terminal." + os.linesep)
         if type(text) == list:
             print("".join(text), end=end)
         else:
