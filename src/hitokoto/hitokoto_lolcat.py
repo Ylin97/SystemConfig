@@ -1,236 +1,102 @@
 #!/usr/bin/python3
 
-import atexit
-import math
+from __future__ import print_function, division
 import os
-import random
-import re
 import sys
-import time
+import random
 import requests
 import unicodedata
-from typing import Iterable
+from math import sin, pi
+from typing import List
 
 
-##########################################
-#                                        #
-#            lolcat implement            #
-#                                        #
-##########################################
+################################################
+#                                              #
+#               lolcat implement               #
+#                                              #
+#  https://github.com/Abhishek8394/lol-cat-py  #
+################################################
 
-# "THE BEER-WARE LICENSE" (Revision 43~maze)
-#
-# <maze@pyth0n.org> wrote these files. As long as you retain this notice you
-# can do whatever you want with this stuff. If we meet some day, and you think
-# this stuff is worth it, you can buy me a beer in return.
-
-PY3 = sys.version_info >= (3,)
-
-# override default handler so no exceptions on SIGPIPE
-if os.name != 'nt':
-    from signal import signal, SIGPIPE, SIG_DFL
-    signal(SIGPIPE, SIG_DFL)
-
-# Reset terminal colors at exit
-def reset():
-    sys.stdout.write('\x1b[0m')
-    sys.stdout.flush()
-
-atexit.register(reset)
+def detect_windows_terminal() -> bool:
+    """
+    Returns True if detects to be running in a powershell, False otherwise.
+    """
+    # return sys.platform == 'win32' and os.environ.get('WT_SESSION', None) is not None
+    return os.name == 'nt'
 
 
-STRIP_ANSI = re.compile(r'\x1b\[(\d+)(;\d+)?(;\d+)?[m|K]')
-COLOR_ANSI = (
-    (0x00, 0x00, 0x00), (0xcd, 0x00, 0x00),
-    (0x00, 0xcd, 0x00), (0xcd, 0xcd, 0x00),
-    (0x00, 0x00, 0xee), (0xcd, 0x00, 0xcd),
-    (0x00, 0xcd, 0xcd), (0xe5, 0xe5, 0xe5),
-    (0x7f, 0x7f, 0x7f), (0xff, 0x00, 0x00),
-    (0x00, 0xff, 0x00), (0xff, 0xff, 0x00),
-    (0x5c, 0x5c, 0xff), (0xff, 0x00, 0xff),
-    (0x00, 0xff, 0xff), (0xff, 0xff, 0xff),
-)
+def supports_color() -> bool:
+    """
+    Returns True if the running system's terminal supports color, and False
+    otherwise.
+    """
+    plat = sys.platform
+    supported_platform = (plat != 'Pocket PC' and ('ANSICON' in os.environ)) \
+        or (plat.lower() == 'linux' and os.environ.get('TERM', '').endswith('256color'))
+    is_wnd_term = detect_windows_terminal()
+    # isatty is not always implemented, #6223.
+    is_a_tty = hasattr(sys.stdout, 'isatty') and sys.stdout.isatty()
+    if (not supported_platform and is_wnd_term and is_a_tty):
+        return True
+    if not supported_platform or not is_a_tty:
+        return False
+    return True
 
 
-class stdoutWin():
-    def __init__(self):
-        self.output = sys.stdout
-        self.string = ''
-        self.i = 0
+def rainbow(freq: int, i: int) -> tuple:
+    """Creates RGB values, inspired from https://github.com/busyloop/lolcat
 
-    def isatty(self):
-        return self.output.isatty()
+    Args
+    ------
+        - `freq`: Frequency, more the value; more the colours
+        - `i`: Current character position, used to set colours at character level
 
-    def write(self,s):
-        self.string = self.string + s
-
-    def flush(self):
-        return self.output.flush()
-
-    def prints(self):
-        string = 'echo|set /p="%s"' %(self.string)
-        os.system(string)
-        self.i += 1
-        self.string = ''
-
-    def println(self):
-        # print()
-        self.prints()
+    Returns
+    ------
+        - tuple: Contains integers R, G, B
+    """
+    red = sin(freq * i + 0) * 127 + 128
+    green = sin(freq * i + 2*pi/3) * 127 + 128
+    blue = sin(freq * i + 4*pi/3) * 127 + 128
+    return int(red), int(green), int(blue)
 
 
-class LolCat(object):
-    def __init__(self, mode=256, output=sys.stdout):
-        self.mode =mode
-        self.output = output
+def print_rainbow_text(text, freq: int = 220, end: str = "\n"):
+    """Prints rainbow text if terminal support for colour text is detected, 
+       else falls back to default terminal settings.
 
-    def _distance(self, rgb1, rgb2):
-        return sum(map(lambda c: (c[0] - c[1]) ** 2,
-            zip(rgb1, rgb2)))
-
-    def ansi(self, rgb):
-        r, g, b = rgb
-
-        if self.mode in (8, 16):
-            colors = COLOR_ANSI[:self.mode]
-            matches = [(self._distance(c, map(int, rgb)), i) for i, c in enumerate(colors)]
-            matches.sort()
-            color = matches[0][1]
-
-            return '3%d' % (color,)
+    Args
+    ------
+        - `text` (str/list(str)): String or list of str. Provide list to make the whole
+                              paragraph look consistent
+        - `freq`: Frequency determines rate of colour change. It's a sine wave so 
+                              changing values on extremes might not help. Sweet spot is 220,
+                              stick to it.
+        - `end`: Similar to `end` param in print function
+    """
+    if not supports_color():
+        # print to stderr so doesn't mess with IO redirections.
+        sys.stderr.write(
+            "No support for colour on this terminal. Try bash/cygwin." + os.linesep)
+        if type(text) == list:
+            print("".join(text), end=end)
         else:
-            gray_possible = True
-            sep = 2.5
-
-            while gray_possible:
-                if r < sep or g < sep or b < sep:
-                    gray = r < sep and g < sep and b < sep
-                    gray_possible = False
-
-                sep += 42.5
-
-            if gray:
-                color = 232 + int(float(sum(rgb) / 33.0))
-            else:
-                color = sum([16]+[int(6 * float(val)/256) * mod
-                    for val, mod in zip(rgb, [36, 6, 1])])
-
-            return '38;5;%d' % (color,)
-
-    def wrap(self, *codes):
-        return '\x1b[%sm' % (''.join(codes),)
-
-    def rainbow(self, freq, i):
-        r = math.sin(freq * i) * 127 + 128
-        g = math.sin(freq * i + 2 * math.pi / 3) * 127 + 128
-        b = math.sin(freq * i + 4 * math.pi / 3) * 127 + 128
-        return [r, g, b]
-
-    def cat(self, content: Iterable, options):
-        if options.animate:
-            self.output.write('\x1b[?25l')
-
-        for line in content:
-            options.os += 1
-            self.println(line, options)
-
-        if options.animate:
-            self.output.write('\x1b[?25h')
-
-    def println(self, s, options):
-        s = s.rstrip()
-        if options.force or self.output.isatty():
-            s = STRIP_ANSI.sub('', s)
-
-        if options.animate:
-            self.println_ani(s, options)
+            print(text, end=end)
+        return
+    seed = random.randint(0, 256)
+    for i, c in enumerate(text):
+        if type(text) != list:
+            r, g, b = rainbow(freq, i + seed)
+            color2 = "\033[38;2;%d;%d;%dm" % (r, g, b)
+            print(color2+c+"\033[0m", end="")
         else:
-            self.println_plain(s, options)
-
-        self.output.write('\n')
-        self.output.flush()
-        if os.name == 'nt':
+            for j, cagain in enumerate(c):
+                # this formula helps colours spread on whole paragraph.
+                r, g, b = rainbow(freq, i*10 + seed + j)
+                color2 = "\033[38;2;%d;%d;%dm" % (r, g, b)
+                print(color2 + cagain + "\033[0m", end="")
             print()
-            self.output.println()
-
-    def println_ani(self, s, options):
-        if not s:
-            return
-
-        for i in range(1, options.duration):
-            self.output.write('\x1b[%dD' % (len(s),))
-            self.output.flush()
-            options.os += options.spread
-            self.println_plain(s, options)
-            time.sleep(1.0 / options.speed)
-
-    def println_plain(self, s, options):
-        for i, c in enumerate(s if PY3 else s.decode(options.charset_py2, 'replace')):
-            rgb = self.rainbow(options.freq, options.os + i / options.spread)
-            self.output.write(''.join([
-                self.wrap(self.ansi(rgb)),
-                c if PY3 else c.encode(options.charset_py2, 'replace'),
-            ]))
-        if os.name == 'nt':
-            self.output.println()
-
-
-def detect_mode(term_hint='xterm-256color'):
-    '''
-    Poor-mans color mode detection.
-    '''
-    if 'ANSICON' in os.environ:
-        return 16
-    elif os.environ.get('ConEmuANSI', 'OFF') == 'ON':
-        return 256
-    else:
-        term = os.environ.get('TERM', term_hint)
-        if term.endswith('-256color') or term in ('xterm', 'screen'):
-            return 256
-        elif term.endswith('-color') or term in ('rxvt',):
-            return 16
-        else:
-            return 256 # optimistic default
-        
-
-class Options:
-    """ lolcat 运行所需参数
-    Parameters
-    ------
-        - `spread`: Rainbow spread, default=3.0
-        - `freq`: Rainbow frequency, default=0.1
-        - `seed`: Rainbow seed, default=0
-        - `animate`: Enable psychedelics, default=False
-        - `duration`: Animation duration, default=12
-        - `speed`: Animation speed, default=20.0
-        - `force`: Force colour even when stdout is not a tty, default=False
-    """
-    def __init__(self, spread=3.0, freq=0.1, seed=0, animate=False,
-                 duration=12, speed=20.0, force=False) -> None:
-        self.spread = spread
-        self.freq = freq
-        self.seed = seed
-        self.animate = animate
-        self.duration = duration
-        self.speed = speed
-        self.force = force
-        self.os = random.randint(0, 256) if seed == 0 else seed
-        self.mode = detect_mode()
-
-
-def run_lolcat(text_list: list):
-    """运行 lolcat
-    
-    Parameters
-    ------
-    `text_list`: 用于输出的文本列表, 列表的元素为一行文本 (str)
-    """
-    options = Options()
-    if os.name == 'nt':
-        lolcat = LolCat(mode=options.mode,output=stdoutWin())
-    else:
-        lolcat = LolCat(mode=options.mode)
-
-    lolcat.cat(text_list, options)
+    print(end=end)
 
 
 ##########################################
@@ -240,6 +106,7 @@ def run_lolcat(text_list: list):
 ##########################################
 
 def str_display_width(s: str) -> int:
+    """Calculate the display width of a string"""
     def get_char_display_width(unicode_str):
         r = unicodedata.east_asian_width(unicode_str)
         if r == "F":    # Fullwidth
@@ -248,7 +115,7 @@ def str_display_width(s: str) -> int:
             return 1
         elif r == "W":  # Wide
             return 2
-        elif r == "Na": # Narrow
+        elif r == "Na":  # Narrow
             return 1
         elif r == "A":  # Ambiguous, go with 2
             return 1
@@ -261,20 +128,24 @@ def str_display_width(s: str) -> int:
     w = 0
     for c in s:
         w += get_char_display_width(c)
-    return w 
+    return w
 
 
+def get_hitokoto_text() -> List[str]:
+    """从一言获取每日一言
 
-def main():
-    """从一言获取每日一言"""
+    Returns
+    ------
+        - A string list contains the content of hitokoto.
+    """
     url = 'https://v1.hitokoto.cn/?encode=json'
-    proxies = { "http": None, "https": None}
+    proxies = {"http": None, "https": None}
     try:
-        res = requests.get(url, proxies=proxies, timeout=(3.05,0.5)).json()
+        res = requests.get(url, proxies=proxies, timeout=(3.05, 0.5)).json()
     except Exception:
         res = fortune[random.randint(0, 20)]
     hitokoto = res['hitokoto'].strip()
-    it_from  = res['from'].strip()
+    it_from = res['from'].strip()
     over30 = False
     text_list = []
     text_list.append("『")
@@ -300,8 +171,12 @@ def main():
         w_cite = str_display_width(cite)
         text_list.append(' ' * (w_hitokoto + 6) + '』')
         text_list.append(' ' * (w_hitokoto - w_cite + 6) + cite)
+    return text_list
 
-    run_lolcat(text_list)
+
+def main():
+    content = get_hitokoto_text()
+    print_rainbow_text(content)
 
 
 if __name__ == '__main__':
@@ -389,4 +264,3 @@ if __name__ == '__main__':
     ]
 
     sys.exit(main())
-
