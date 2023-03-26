@@ -1,0 +1,39 @@
+#
+# ~/.bashrc
+#
+
+# If not running interactively, don't do anything
+[[ $- != *i* ]] && return
+
+alias ls='ls --color=auto'
+PS1='[\u@\h \W]\$ '
+
+# 每日一言
+~/myscripts/hitokoto.py
+
+# autojump
+[[ -s /etc/profile.d/autojump.sh ]] && source /etc/profile.d/autojump.sh
+
+# 解决 clear 命令报错 'terminals database is inaccessible'
+export TERMINFO=/usr/share/terminfo
+
+function Init-conda() {
+    # >>> conda initialize >>>
+    # !! Contents within this block are managed by 'conda init' !!
+    __conda_setup="$('/opt/miniconda/bin/conda' 'shell.bash' 'hook' 2> /dev/null)"
+    if [ $? -eq 0 ]; then
+        eval "$__conda_setup"
+    else
+        if [ -f "/opt/miniconda/etc/profile.d/conda.sh" ]; then
+            . "/opt/miniconda/etc/profile.d/conda.sh"
+        else
+            export PATH="/opt/miniconda/bin:$PATH"
+        fi
+    fi
+    unset __conda_setup
+    # <<< conda initialize <<<
+}
+
+#region project initialize
+source /home/yalin/.config/Code/projectTemplate/init_vscode_project.sh
+#endregion
