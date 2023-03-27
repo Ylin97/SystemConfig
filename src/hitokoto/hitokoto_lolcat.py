@@ -81,7 +81,7 @@ def print_rainbow_text(text, freq: int = 220, end: str = "\n"):
         sys.stderr.write(
             "No support for colour on this terminal. Try bash/zsh/cygwin/Windows Terminal." + os.linesep)
         if type(text) == list:
-            print("".join(text), end=end)
+            print("\n".join(text), end=end)
         else:
             print(text, end=end)
         return
