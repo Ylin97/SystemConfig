@@ -36,7 +36,7 @@ def main():
     try:
         res = requests.get(url, proxies=proxies, timeout=(3.05,0.5)).json()
     except Exception:
-        res = fortune[random.randint(0, 20)]
+        res = fortune[random.randrange(0, 20)]
     hitokoto = res['hitokoto'].strip()
     it_from  = res['from'].strip()
     over30 = False
