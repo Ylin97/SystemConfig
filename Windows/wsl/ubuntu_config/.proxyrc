@@ -1,0 +1,54 @@
+# Proxy setting
+function get_host_ip()
+{
+    file_path="$HOME/Share/.windows_ip_info"
+    local host_ip=$(grep "以太网" $file_path | sed -E 's/.*IPv4Address=([0-9.]+).*/\1/')
+    if [[ -z $host_ip ]]; then
+        local host_ip=$(grep "WLAN" $file_path | sed -E 's/.*IPv4Address=([0-9.]+).*/\1/')
+    fi
+    echo $host_ip
+}
+
+function setproxy_http()
+{
+    host_ip=`get_host_ip`
+    export https_proxy="$host_ip:$1"
+    export http_proxy="$host_ip:$1"
+
+    git config --global https.proxy https://$host_ip:$1
+    git config --global http.proxy http://$host_ip:$1
+}
+
+function setproxy_socks()
+{
+    host_ip=`get_host_ip`
+    export https_proxy=socks5://$host_ip:$1
+    export http_proxy=socks5://$host_ip:$1
+    
+    git config --global https.proxy socks5://$host_ip:$1
+    git config --global http.proxy socks5://$host_ip:$1
+}
+
+function unsetproxy()
+{
+    unset https_proxy
+    unset http_proxy
+
+    git config --global --unset http.proxy
+    git config --global --unset https.proxy
+
+}
+
+
+# Example aliases
+# alias zshconfig="mate ~/.zshrc"
+# alias ohmyzsh="mate ~/.oh-my-zsh"
+# alias la="ls -a"
+alias setproxy="setproxy_http 7890"
+alias setproxy-v="setproxy_http 10809"
+alias setproxy-c="setproxy_http 7890"
+alias setproxy-sv="setproxy_socks 10808"
+alias setproxy-sc="setproxy_socks 7890"
+# alias chrome="/usr/bin/google-chrome-stable"
+# alias chrome-proxy-v="/usr/bin/google-chrome-stable --proxy-server='socks5://127.0.0.1:20170'"
+# alias chrome-proxy-c="/usr/bin/google-chrome-stable --proxy-server='socks5://127.0.0.1:7890'"
