@@ -10,8 +10,15 @@ function Init-conda
     #endregion
 }
 
-# 每日一言
-D:\\Miniconda3\\python $HOME\hitokoto_lolcat.py
+#region 每日一言
+function hitokoto 
+{
+    #D:\\Miniconda3\\python -u $HOME\hitokoto.py | lolcat
+    D:\\Miniconda3\\python -u $HOME\hitokoto_lolcat.py
+}
+
+hitokoto
+#endregion 每日一言
 
 #region project initialize
 function Init-project
@@ -108,8 +115,21 @@ function Reset-cpp
 #endregion
 
 
-# 获取Windows的IP用于设置wsl2代理
-Get-NetIPAddress -AddressFamily IPv4 | select InterfaceAlias, IPv4Address | Out-File D:\Code\wslWorkspace\.windows_ip_info -encoding utf8
+#region 获取Windows的IP用于设置wsl2代理
+# 设置文件路径
+$filePath = "E:\wslShare\.windows_ip_info"
+
+# 如果文件不存在，创建文件
+if (-not (Test-Path $filePath)) {
+    New-Item -Path $filePath -ItemType File
+}
+
+Get-NetIPAddress -AddressFamily IPv4 | select InterfaceAlias, IPv4Address | Set-Content -Path $filePath -Encoding utf8
+
+# 设置文件为隐藏属性
+Set-ItemProperty -Path $filePath -Name Attributes -Value ([System.IO.FileAttributes]::Hidden)
+#endregion
+
 
 #region proxy setting
 $host_ip = "127.0.0.1"
@@ -118,8 +138,8 @@ function setproxy_http
     param (
         $port = "Unknown"
     )
-    $Env:https_proxy = "${host_ip}:$port"
-    $Env:http_proxy  = "${host_ip}:$port"
+    $Env:https_proxy = "https://${host_ip}:$port"
+    $Env:http_proxy  = "http://${host_ip}:$port"
 
     git config --global https.proxy "https://${host_ip}:$port"
     git config --global http.proxy "http://${host_ip}:$port"
@@ -148,8 +168,23 @@ function unsetproxy
 }
 
 function setproxy { setproxy_http 7890 }
-function setproxy-v { setproxy_http 20172 }
+function setproxy-v { setproxy_http 10809 }
 function setproxy-c { setproxy_http 7890 }
-function setproxy-sv { setproxy_socks 20170 }
+function setproxy-sv { setproxy_socks 10808 }
 function setproxy-sc { setproxy_socks 7890 }
 #endregion
+
+#region OPENAI SETTING
+$Env:OPENAI_API_BASE="https://chat.openai.com/v1"
+$Env:OPENAI_API_HOST="https://chat.openai.com"
+$Env:OPENAI_API_KEY=""
+
+function askgpt {
+    sgpt @args
+}
+
+function chatgpt {
+    D:\Miniconda3\envs\chatgpt\python.exe -u 'D:\Portable Program Files\gpt-cli\gpt.py' @args
+}
+#endregion
+
