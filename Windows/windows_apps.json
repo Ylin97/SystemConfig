@@ -1,0 +1,101 @@
+{
+	"$schema" : "https://aka.ms/winget-packages.schema.2.0.json",
+	"CreationDate" : "2024-10-28T17:02:46.410-00:00",
+	"Sources" : 
+	[
+		{
+			"Packages" : 
+			[
+				{
+					"PackageIdentifier" : "7zip.7zip"
+				},
+				{
+					"PackageIdentifier" : "Git.Git"
+				},
+				{
+					"PackageIdentifier" : "Anaconda.Miniconda3"
+				},
+				{
+					"PackageIdentifier" : "Mozilla.Firefox"
+				},
+				{
+					"PackageIdentifier" : "Rizonesoft.Notepad3"
+				},
+				{
+					"PackageIdentifier" : "Tencent.TencentMeeting"
+				},
+				{
+					"PackageIdentifier" : "RARLab.WinRAR"
+				},
+				{
+					"PackageIdentifier" : "DigitalScholar.Zotero"
+				},
+				{
+					"PackageIdentifier" : "lyswhut.lx-music-desktop"
+				},
+				{
+					"PackageIdentifier" : "SoftDeluxe.FreeDownloadManager"
+				},
+				{
+					"PackageIdentifier" : "Neovim.Neovim"
+				},
+				{
+					"PackageIdentifier" : "Kitware.CMake"
+				},
+				{
+					"PackageIdentifier" : "GyDi.ClashVerge"
+				},
+				{
+					"PackageIdentifier" : "Microsoft.PowerShell"
+				},
+				{
+					"PackageIdentifier" : "Microsoft.VisualStudioCode"
+				},
+				{
+					"PackageIdentifier" : "Microsoft.VisualStudio.2022.Community"
+				},
+				{
+					"PackageIdentifier" : "Google.Chrome.EXE"
+				},
+				{
+					"PackageIdentifier" : "Tencent.QQ.NT"
+				},
+				{
+					"PackageIdentifier" : "Youqu.ToDesk"
+				},
+				{
+					"PackageIdentifier" : "Tencent.WeChat"
+				},
+				{
+					"PackageIdentifier" : "Microsoft.BingWallpaper"
+				},
+				{
+					"PackageIdentifier" : "Alibaba.QuarkCloudDrive"
+				},
+				{
+					"PackageIdentifier" : "Tencent.WeCom"
+				},
+				{
+					"PackageIdentifier" : "Baidu.BaiduNetdisk"
+				},
+				{
+					"PackageIdentifier" : "JanDeDobbeleer.OhMyPosh"
+				},
+				{
+					"PackageIdentifier" : "Yuanli.uTools"
+				},
+				{
+					"PackageIdentifier" : "Microsoft.WindowsTerminal"
+				}
+			],
+			"SourceDetails" : 
+			{
+				"Argument" : "https://cdn.winget.microsoft.com/cache",
+				"Identifier" : "Microsoft.Winget.Source_8wekyb3d8bbwe",
+				"Name" : "winget",
+				"Type" : "Microsoft.PreIndexed.Package"
+			}
+		}
+	],
+	"WinGetVersion" : "1.8.1911"
+}
