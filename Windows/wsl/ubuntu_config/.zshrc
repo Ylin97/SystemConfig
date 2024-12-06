@@ -135,6 +135,17 @@ for key ('j') bindkey -M vicmd ${key} history-substring-search-down
 unset key
 # }}} End configuration added by Zim install
 
+# Platform type
+if [[ -n "$MSYSTEM" ]]; then
+    environment="MSYS2"
+elif [[ -f /proc/version && $(cat /proc/version) =~ microsoft ]]; then
+    environment="WSL"
+elif [[ -f /proc/version && $(cat /proc/version) =~ Linux ]]; then
+    environment="Linux"
+else
+    environment="Unknown"
+fi
+
 # Lines configured by zsh-newuser-install
 HISTFILE=~/.histfile
 HISTSIZE=1000
@@ -149,10 +160,14 @@ SAVEHIST=2000
 # End of lines added by compinstall
 
 # Proxy setting
-source ~/.proxyrc
+source ~/.proxyrc "$environment"
 
 # hitokoto
-/home/dalao/miniconda3/bin/python ~/Autorun/hitokoto_lolcat.py
+if [[ "$environment" == "MSYS2" ]]; then
+    python ~/Autorun/hitokoto_lolcat.py
+elif [[ "$environment" == "WSL" || "$environment" == "Linux" ]]; then 
+    /home/dalao/miniconda3/bin/python ~/Autorun/hitokoto_lolcat.py
+fi
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
@@ -166,8 +181,10 @@ alias la='ls -A'
 alias l='ls -CF'
 
 # CUDA
-export PATH=/usr/local/cuda/bin:$PATH
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64
+if [[ -d "/usr/local/cuda/bin" ]]; then
+    export PATH=/usr/local/cuda/bin:$PATH
+    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64
+fi
 
 # conda setting
 function Init-conda {
@@ -188,6 +205,8 @@ unset __conda_setup
 }
 
 # Windows
-export PATH="$PATH:/mnt/c/Users/lesmo/AppData/Local/Microsoft/WindowsApps"
-export PATH="$PATH:/mnt/c/WINDOWS"
-export PATH="$PATH:/mnt/d/Program Files/Microsoft VS Code/bin"
+if [[ "$environment" == "WSL" ]]; then
+    export PATH="$PATH:/mnt/c/Users/lesmo/AppData/Local/Microsoft/WindowsApps"
+    export PATH="$PATH:/mnt/c/WINDOWS"
+    export PATH="$PATH:/mnt/d/Program Files/Microsoft VS Code/bin"
+fi

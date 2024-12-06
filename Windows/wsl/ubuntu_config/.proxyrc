@@ -1,10 +1,16 @@
 # Proxy setting
+environment=$1;
+
 function get_host_ip()
 {
-    file_path="$HOME/Share/.windows_ip_info"
-    local host_ip=$(grep -P "@{InterfaceAlias=以太网(?!\s\d);.*}" $file_path | sed -E 's/.*IPv4Address=([0-9.]+).*/\1/')
-    if [[ -z $host_ip ]]; then
-        local host_ip=$(grep -P "@{InterfaceAlias=WLAN(?!\s\d);.*}" $file_path | sed -E 's/.*IPv4Address=([0-9.]+).*/\1/')
+    if [[ "$environment" == "WSL" ]]; then
+        file_path="$HOME/Share/.windows_ip_info"
+        local host_ip=$(grep -P "@{InterfaceAlias=以太网(?!\s\d);.*}" $file_path | sed -E 's/.*IPv4Address=([0-9.]+).*/\1/')
+        if [[ -z $host_ip ]]; then
+            local host_ip=$(grep -P "@{InterfaceAlias=WLAN(?!\s\d);.*}" $file_path | sed -E 's/.*IPv4Address=([0-9.]+).*/\1/')
+        fi
+    else
+        local host_ip="127.0.0.1"
     fi
     echo $host_ip
 }

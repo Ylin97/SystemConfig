@@ -116,12 +116,47 @@ if ! shopt -oq posix; then
   fi
 fi
 
+# Platform type
+if [[ -n "$MSYSTEM" ]]; then
+    environment="MSYS2"
+elif [[ -f /proc/version && $(cat /proc/version) =~ microsoft ]]; then
+    environment="WSL"
+elif [[ -f /proc/version && $(cat /proc/version) =~ Linux ]]; then
+    environment="Linux"
+else
+    environment="Unknown"
+fi
+
 # Proxy setting
-source ~/.proxyrc
+source ~/.proxyrc "$environment"
 
 # hitokoto
-/home/dalao/miniconda3/bin/python ~/Autorun/hitokoto_lolcat.py
+if [[ "$environment" == "MSYS2" ]]; then
+    python ~/Autorun/hitokoto_lolcat.py
+elif [[ "$environment" == "WSL" || "$environment" == "Linux" ]]; then 
+    /home/dalao/miniconda3/bin/python ~/Autorun/hitokoto_lolcat.py
+fi
 
 # CUDA
-export PATH=/usr/local/cuda/bin:$PATH
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64
+if [[ -d "/usr/local/cuda/bin" ]]; then
+    export PATH=/usr/local/cuda/bin:$PATH
+    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64
+fi
+
+# conda setting
+function Init-conda {
+# >>> conda initialize >>>
+# !! Contents within this block are managed by 'conda init' !!
+__conda_setup="$('/home/dalao/miniconda3/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
+if [ $? -eq 0 ]; then
+    eval "$__conda_setup"
+else
+    if [ -f "/home/dalao/miniconda3/etc/profile.d/conda.sh" ]; then
+        . "/home/dalao/miniconda3/etc/profile.d/conda.sh"
+    else
+        export PATH="/home/dalao/miniconda3/bin:$PATH"
+    fi
+fi
+unset __conda_setup
+# <<< conda initialize <<<
+}
