@@ -117,17 +117,17 @@ function Reset-cpp
 
 #region 获取Windows的IP用于设置wsl2代理
 # 设置文件路径
-$filePath = "E:\wslShare\.windows_ip_info"
+$ipInfoPath = "E:\wslShare\.windows_ip_info"
 
 # 如果文件不存在，创建文件
-if (-not (Test-Path $filePath)) {
-    New-Item -Path $filePath -ItemType File
+if (-not (Test-Path $ipInfoPath)) {
+    New-Item -Path $ipInfoPath -ItemType File
 }
 
-Get-NetIPAddress -AddressFamily IPv4 | select InterfaceAlias, IPv4Address | Set-Content -Path $filePath -Encoding utf8
+Get-NetIPAddress -AddressFamily IPv4 | select InterfaceAlias, IPv4Address | Set-Content -Path $ipInfoPath -Encoding utf8
 
 # 设置文件为隐藏属性
-Set-ItemProperty -Path $filePath -Name Attributes -Value ([System.IO.FileAttributes]::Hidden)
+Set-ItemProperty -Path $ipInfoPath -Name Attributes -Value ([System.IO.FileAttributes]::Hidden)
 #endregion
 
 
