@@ -85,7 +85,7 @@ def print_rainbow_text(text, freq: int = 220, end: str = "\n"):
         else:
             print(text, end=end)
         return
-    seed = random.randint(0, 256)
+    seed = random.randrange(0, 256)
     for i, c in enumerate(text):
         if type(text) != list:
             r, g, b = rainbow(freq, i + seed)
