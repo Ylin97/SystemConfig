@@ -149,8 +149,19 @@ Fortune fetch_hitokoto() {
 }
 
 // 格式化一言
-vector<string> format_hitokoto(const string &quote, const string &from, int max_width = 30) {
+vector<string> format_hitokoto(const string &_quote, const string &_from, int _max_width = 60) {
     vector<string> result;
+    string quote = _quote;
+    string cite = "----" + _from;
+    int cite_width = get_display_width(cite);
+    int quote_width = get_display_width(quote);
+    const int max_width = max(_max_width, cite_width + 4);
+
+    if (cite_width > quote_width) {
+        int space_width = (max_width - cite_width + 5) / 2;
+        quote = string(space_width, ' ') + quote + string(space_width, ' ');
+    }
+
     result.push_back("『");
 
     regex utf8_char_re(R"(([\x00-\x7F]|[\xC0-\xDF][\x80-\xBF]|[\xE0-\xEF][\x80-\xBF]{2}|[\xF0-\xF7][\x80-\xBF]{3}))");
@@ -159,34 +170,33 @@ vector<string> format_hitokoto(const string &quote, const string &from, int max_
 
     string line;
     int line_width = 0;
-    bool over30 = false;
+    bool over_max = false;
 
     for (auto it = begin; it != end; ++it) {
         string ch = it->str();
         int w = get_display_width(ch);
-        if (line_width + 1 > max_width) {
+        if (line_width + w > max_width) {
             result.push_back(line);
             line.clear();
             line_width = 0;
-            over30 = true;
+            over_max = true;
         }
         line += ch;
-        ++line_width;
+        line_width += w;
     }
 
     if (!line.empty()) {
-        if (over30) {
-            int space = (max_width - line_width) / 2;
-            result.push_back(string(space, ' ') + line);
+        if (over_max) {
+            int space_width = (max_width - line_width) / 2;
+            result.push_back(string(space_width, ' ') + line);
         } else {
             result.push_back("    " + line);
         }
     }
 
-    string cite = "----" + from;
-    if (over30) {
-        result.push_back(string(60, ' ') + "』");
-        result.push_back(string(60 - get_display_width(cite), ' ') + cite);
+    if (over_max) {
+        result.push_back(string(max_width, ' ') + "』");
+        result.push_back(string(max_width - cite_width, ' ') + cite);
     } else {
         int qwidth = get_display_width(quote);
         if (!quote.empty()) {
@@ -197,7 +207,11 @@ vector<string> format_hitokoto(const string &quote, const string &from, int max_
         }
 
         result.push_back(string(qwidth + 6, ' ') + "』");
-        result.push_back(string(qwidth - get_display_width(cite) + 6, ' ') + cite);
+        if (cite_width > qwidth) {
+            result.push_back(string(4, ' ') + cite);
+        } else {
+            result.push_back(string(qwidth - cite_width + 6, ' ') + cite);
+        }
     }
 
     return result;
@@ -206,8 +220,14 @@ vector<string> format_hitokoto(const string &quote, const string &from, int max_
 // 主函数
 int main() {
     const auto [quote, from] = fetch_hitokoto();   
-    auto lines = format_hitokoto(quote, from);
-    print_rainbow_text(lines);
+    try {
+        auto lines = format_hitokoto(quote, from);
+        print_rainbow_text(lines);
+    } catch (const exception& e) {
+        cerr << "quote: " << quote << endl;
+        cerr << "from: " << from << endl;
+        cerr << "Error: " << e.what() << endl;
+    }
     
     return 0;
 }
