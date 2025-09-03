@@ -65,7 +65,7 @@ if ($Codec -eq "av1") {
 }
 
 if (-not (Test-Path $Source)) {
-    Write-Host "❌ 源目录不存在：$Source" -ForegroundColor Red
+    Write-Host "❌ 源路径不存在：$Source" -ForegroundColor Red
     exit 1
 }
 if (-not (Test-Path $Output)) {

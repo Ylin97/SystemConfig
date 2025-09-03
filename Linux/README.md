@@ -82,8 +82,8 @@ if test "$environment" = "WSL"
 end
 
 # Proxy setting
-if test -s ~/.alias
-    source ~/.alias
+if test -s ~/.proxyrc
+    source ~/.proxyrc
 end
 # <<< yalin settings <<<
 ```
