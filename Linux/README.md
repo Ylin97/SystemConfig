@@ -35,7 +35,7 @@ fi
 
 # Windows
 if [[ "$environment" == "WSL" ]]; then
-    export PATH="$PATH:/mnt/c/Users/lesmo/AppData/Local/Microsoft/WindowsApps"
+    export PATH="$PATH:/mnt/c/Users/yalin/AppData/Local/Microsoft/WindowsApps"
     export PATH="$PATH:/mnt/c/WINDOWS"
     export PATH="$PATH:/mnt/d/Program Files/Microsoft VS Code/bin"
 fi
@@ -44,6 +44,8 @@ fi
 test -s ~/.proxyrc && . ~/.proxyrc || true
 # <<< yalin settings <<<
 ```
+
+**注意！Windows第一条环境变量要修改用户名！**
 
 ### fish (config.fish)
 
