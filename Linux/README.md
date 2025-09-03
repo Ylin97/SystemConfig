@@ -73,14 +73,14 @@ end
 if test "$environment" = "MSYS2"
     python ~/Autorun/hitokoto_lolcat.py
 else if test "$environment" = "WSL" -o "$environment" = "Linux"
-    eval $HOME/.local/bin/hitokoto
+    eval $HOME/.local/bin/hitokoto_lolcat
 end
 
 # Windows PATH adjustments for WSL
 if test "$environment" = "WSL"
-    set -gx PATH $PATH "/mnt/c/Users/lesmo/AppData/Local/Microsoft/WindowsApps"
-    set -gx PATH $PATH "/mnt/c/WINDOWS"
-    set -gx PATH $PATH "/mnt/d/Program Files/Microsoft VS Code/bin"
+    fish_add_path --append --path "/mnt/c/Users/ASUS/AppData/Local/Microsoft/WindowsApps"
+    fish_add_path --append --path "/mnt/c/WINDOWS"
+    fish_add_path --append --path "/mnt/d/Program Files/Microsoft VS Code/bin"
 end
 
 # Proxy setting
@@ -89,6 +89,8 @@ if test -s ~/.proxyrc
 end
 # <<< yalin settings <<<
 ```
+
+**注意！Windows第一条环境变量要修改用户名！**
 
 ## 必装软件 
 
